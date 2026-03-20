@@ -137,6 +137,8 @@ const messages: Messages = {
     cofinsCst: "CST COFINS",
     unitOfMeasure: "Unidade",
     fiscalDataHint: "Deixe em branco para usar os padrões das configurações fiscais",
+    imageUrl: "URL da Imagem",
+    imageUrlPlaceholder: "https://exemplo.com/imagem-produto.jpg",
   },
   customers: {
     addCustomer: "Adicionar Cliente",
@@ -227,6 +229,12 @@ const messages: Messages = {
     outOfStock: "{name} está sem estoque",
     limitedStock: "Apenas {count} unidades de {name} disponíveis",
     limitedUnits: "Apenas {count} unidades disponíveis",
+    allCategories: "Todos",
+    itemsInCart: "{count} itens",
+    checkout: "Finalizar",
+    clearCart: "Limpar",
+    emptyCart: "Toque em um produto para adicioná-lo ao carrinho",
+    noImage: "Sem imagem",
   },
   fiscal: {
     title: "Notas Fiscais",

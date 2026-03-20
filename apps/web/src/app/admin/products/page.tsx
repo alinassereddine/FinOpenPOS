@@ -49,6 +49,7 @@ export default function Products() {
     price: z.number().min(0, t("priceMustBePositive")),
     in_stock: z.number().int().min(0, t("stockMustBeNonNegative")),
     category: z.string(),
+    image_url: z.string(),
     ncm: z.string(),
     cfop: z.string(),
     icms_cst: z.string(),
@@ -126,7 +127,7 @@ export default function Products() {
   });
 
   const form = useForm({
-    defaultValues: { name: "", description: "", price: 0, in_stock: 0, category: "", ncm: "", cfop: "", icms_cst: "", pis_cst: "", cofins_cst: "", unit_of_measure: "" },
+    defaultValues: { name: "", description: "", price: 0, in_stock: 0, category: "", image_url: "", ncm: "", cfop: "", icms_cst: "", pis_cst: "", cofins_cst: "", unit_of_measure: "" },
     validators: {
       onSubmit: productFormSchema,
     },
@@ -137,6 +138,7 @@ export default function Products() {
         price: Math.round(value.price * 100),
         in_stock: value.in_stock,
         category: value.category || undefined,
+        image_url: value.image_url || undefined,
         ncm: value.ncm || undefined,
         cfop: value.cfop || undefined,
         icms_cst: value.icms_cst || undefined,
@@ -181,6 +183,7 @@ export default function Products() {
     form.setFieldValue("pis_cst", p.pis_cst ?? "");
     form.setFieldValue("cofins_cst", p.cofins_cst ?? "");
     form.setFieldValue("unit_of_measure", p.unit_of_measure ?? "");
+    form.setFieldValue("image_url", p.image_url ?? "");
     setIsDialogOpen(true);
   };
 
@@ -331,6 +334,29 @@ export default function Products() {
                         <SelectItem value="home">{t("home")}</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                )}
+              </form.Field>
+              <form.Field name="image_url">
+                {(field) => (
+                  <div className="flex flex-col sm:grid sm:grid-cols-4 sm:items-start gap-2 sm:gap-4">
+                    <Label htmlFor="image_url" className="sm:text-right mt-2">{t("imageUrl")}</Label>
+                    <div className="col-span-3 space-y-2">
+                      <Input
+                        id="image_url"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        placeholder={t("imageUrlPlaceholder")}
+                      />
+                      {field.state.value && (
+                        <img
+                          src={field.state.value}
+                          alt="Preview"
+                          className="h-20 w-20 object-cover rounded-md border"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      )}
+                    </div>
                   </div>
                 )}
               </form.Field>

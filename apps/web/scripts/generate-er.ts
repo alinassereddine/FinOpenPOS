@@ -115,9 +115,11 @@ function injectIntoFile(filePath: string, mermaid: string) {
 
 const mermaid = generateMermaid();
 
-import { resolve } from "node:path";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = resolve(import.meta.dirname, "../../..");
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = resolve(__dirname, "../../..");
 injectIntoFile(resolve(root, "README.md"), mermaid);
 injectIntoFile(resolve(root, "README.ptBR.md"), mermaid);
 injectIntoFile(

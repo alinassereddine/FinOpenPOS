@@ -1,28 +1,10 @@
-#!/usr/bin/env bun
-/**
- * prepare-prod.ts
- *
- * Converts the project from PGLite (embedded PostgreSQL WASM) to a real
- * PostgreSQL server, following the migration steps documented in README.md.
- *
- * What it does:
- *   1. Installs `pg` and removes `@electric-sql/pglite`
- *   2. Rewrites `src/lib/db/index.ts` to use node-postgres
- *   3. Rewrites `drizzle.config.ts` to use a DATABASE_URL
- *   4. Removes `db:ensure` from dev/build scripts in package.json
- *   5. Removes `serverExternalPackages` from next.config.mjs
- *   6. Deletes `scripts/ensure-db.ts`
- *   7. Adds DATABASE_URL to .env.example
- *
- * Usage:
- *   bun scripts/prepare-prod.ts
- */
-
-import { $ } from "bun";
 import { readFileSync, writeFileSync, unlinkSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { execSync } from "node:child_process";
 
-const ROOT = join(import.meta.dir, "..");
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(__dirname, "..");
 
 function readFile(relativePath: string): string {
   return readFileSync(join(ROOT, relativePath), "utf-8");
@@ -45,7 +27,7 @@ async function main() {
 
   // Step 1: Install pg, remove pglite
   console.log("1. Installing pg and removing @electric-sql/pglite...");
-  await $`cd ${ROOT} && bun add pg && bun add -d @types/pg && bun remove @electric-sql/pglite`.quiet();
+  execSync(`npm install pg @types/pg && npm uninstall @electric-sql/pglite`, { cwd: ROOT, stdio: "inherit" });
   console.log("  Done.\n");
 
   // Step 2: Rewrite src/lib/db/index.ts
@@ -87,17 +69,17 @@ export default defineConfig({
 
   // Remove db:ensure from dev and build scripts
   if (pkg.scripts.dev) {
-    pkg.scripts.dev = pkg.scripts.dev.replace("bun run db:ensure && ", "");
+    pkg.scripts.dev = pkg.scripts.dev.replace("npm run db:ensure && ", "");
   }
   if (pkg.scripts.build) {
-    pkg.scripts.build = pkg.scripts.build.replace("bun run db:ensure && ", "");
+    pkg.scripts.build = pkg.scripts.build.replace("npm run db:ensure && ", "");
   }
 
   // Remove db:ensure script itself
   delete pkg.scripts["db:ensure"];
 
-  // Add prepare-prod script if not present
-  pkg.scripts["prepare-prod"] = "bun scripts/prepare-prod.ts";
+  // Update prepare-prod script
+  pkg.scripts["prepare-prod"] = "tsx scripts/prepare-prod.ts";
 
   writeFile("package.json", JSON.stringify(pkg, null, 2) + "\n");
   console.log("  Done.\n");
@@ -135,8 +117,8 @@ export default defineConfig({
   console.log("=== Migration complete! ===\n");
   console.log("Next steps:");
   console.log("  1. Set DATABASE_URL in your .env file");
-  console.log("  2. Run: bun run db:push");
-  console.log("  3. Run: bun run dev");
+  console.log("  2. Run: npm run db:push");
+  console.log("  3. Run: npm run dev");
   console.log("");
 }
 

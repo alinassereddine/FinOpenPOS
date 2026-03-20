@@ -135,6 +135,8 @@ const messages = {
     cofinsCst: "COFINS CST",
     unitOfMeasure: "Unit",
     fiscalDataHint: "Leave blank to use global defaults from fiscal settings",
+    imageUrl: "Image URL",
+    imageUrlPlaceholder: "https://example.com/product-image.jpg",
   },
   customers: {
     addCustomer: "Add Customer",
@@ -225,6 +227,12 @@ const messages = {
     outOfStock: "{name} is out of stock",
     limitedStock: "Only {count} units of {name} available",
     limitedUnits: "Only {count} units available",
+    allCategories: "All",
+    itemsInCart: "{count} items",
+    checkout: "Checkout",
+    clearCart: "Clear",
+    emptyCart: "Tap a product to add it to the cart",
+    noImage: "No image",
   },
   fiscal: {
     title: "Invoices",
