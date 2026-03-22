@@ -25,6 +25,7 @@ Open-source Point of Sale (POS) and inventory management system with **Arabic lo
 ## Features
 
 ### Business
+
 - **Dashboard** with interactive charts (revenue, expenses, cash flow, profit margin)
 - **Multi-Category Management** with dedicated CRUD UI
 - **Product Management** with relational categories, cost tracking, and stock control
@@ -37,6 +38,7 @@ Open-source Point of Sale (POS) and inventory management system with **Arabic lo
 - **API Documentation** auto-generated interactive docs via Scalar at `/api/docs`
 
 ### Localization
+
 - **Full Arabic Support** — complete translation of all UI strings and business logic
 - **Native RTL Layout** — automatic Right-to-Left structuring for a seamless Arabic experience
 - **Multi-Language Engine** — easily extendable to other languages via `next-intl`
@@ -65,7 +67,7 @@ flowchart LR
 ## Tech Stack
 
 | Layer | Technology |
-|-------|------------|
+| :--- | :--- |
 | Framework | Next.js 16 (App Router) |
 | UI | React 19, Tailwind CSS 4, Radix UI, Recharts |
 | Database | PGLite (PostgreSQL via WASM) |
@@ -87,7 +89,7 @@ cp apps/web/.env.example apps/web/.env
 
 Edit `apps/web/.env` with a secure secret:
 
-```
+```bash
 BETTER_AUTH_SECRET=generate-with-openssl-rand-base64-32
 BETTER_AUTH_URL=http://localhost:3001
 ```
@@ -97,14 +99,14 @@ bun install
 bun run dev
 ```
 
-Open http://localhost:3001 and use the **Fill demo credentials** button to sign in with the test account (`test@example.com` / `test1234`).
+Open <http://localhost:3001> and use the **Fill demo credentials** button to sign in with the test account (`test@example.com` / `test1234`).
 
 > The first `bun run dev` automatically creates the database at `apps/web/data/pglite`, pushes the schema via Drizzle and runs the seed with demo data (20 customers, 32 products, 40 orders, 25 transactions).
 
 ## Scripts
 
 | Command | Description |
-|---------|-------------|
+| :--- | :--- |
 | `bun run dev` | Start all apps via Turborepo |
 | `bun run dev:web` | Start only the web app |
 | `bun run check` | Lint and format with Biome |
@@ -113,7 +115,7 @@ Open http://localhost:3001 and use the **Fill demo credentials** button to sign 
 
 ## Project Structure
 
-```
+```text
 FinOpenPOS/
 ├── apps/
 │   └── web/                    # Next.js 16 web application
@@ -148,7 +150,7 @@ The raw OpenAPI 3.0 spec is available at `/api/openapi.json`.
 ### tRPC Procedures
 
 | Router | Procedures | Description |
-|--------|-----------|-------------|
+| :--- | :--- | :--- |
 | `products` | `list`, `create`, `update`, `delete` | Product CRUD with stock and categories |
 | `categories` | `list`, `create`, `update`, `delete` | Product Category CRUD |
 | `customers` | `list`, `create`, `update`, `delete`, `get` | Customer CRUD and profile details |
