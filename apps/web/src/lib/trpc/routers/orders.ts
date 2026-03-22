@@ -12,6 +12,7 @@ const orderWithCustomerSchema = z.object({
   user_uid: z.string(),
   created_at: z.date().nullable(),
   customer: z.object({ name: z.string() }).nullable(),
+  orderItems: z.array(z.object({ cost_price: z.number().nullable(), quantity: z.number() })).optional(),
 });
 
 const orderDetailSchema = z.object({
@@ -27,6 +28,8 @@ const orderDetailSchema = z.object({
     product_id: z.number().nullable(),
     quantity: z.number(),
     price: z.number(),
+    cost_price: z.number().nullable(),
+    discount: z.number(),
     product: z.object({ name: z.string(), category: z.string().nullable() }).nullable(),
   })),
 });
@@ -62,6 +65,9 @@ export const ordersRouter = router({
           customer: {
             columns: { name: true },
           },
+          orderItems: {
+            columns: { cost_price: true, quantity: true },
+          },
         },
       });
     }),
@@ -77,6 +83,8 @@ export const ordersRouter = router({
             id: z.number(),
             quantity: z.number().int().positive(),
             price: z.number().int(),
+            cost_price: z.number().int().default(0),
+            discount: z.number().int().default(0),
           })
         ),
         total: z.number().int(),
@@ -101,6 +109,8 @@ export const ordersRouter = router({
             product_id: product.id,
             quantity: product.quantity,
             price: product.price,
+            cost_price: product.cost_price ?? 0,
+            discount: product.discount ?? 0,
           }))
         );
 
@@ -132,7 +142,7 @@ export const ordersRouter = router({
       z.object({
         id: z.number(),
         total_amount: z.number().int().optional(),
-        status: z.enum(["completed", "pending", "cancelled"]).optional(),
+        status: z.enum(["completed", "cancelled"]).optional(),
       })
     )
     .output(orderWithCustomerSchema)

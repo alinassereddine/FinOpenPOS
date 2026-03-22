@@ -35,8 +35,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     return <div className="text-muted-foreground">{t("orderNotFound")}</div>;
   }
 
-  const statusColor = order.status === "completed" ? "text-green-600" : order.status === "cancelled" ? "text-red-600" : "text-yellow-600";
-  const statusLabel = order.status === "completed" ? tc("completed") : order.status === "cancelled" ? tc("cancelled") : tc("pending");
+  const statusColor = order.status === "completed" ? "text-green-600" : "text-red-600";
+  const statusLabel = order.status === "completed" ? tc("completed") : tc("cancelled");
 
   return (
     <div className="space-y-6 max-w-3xl">

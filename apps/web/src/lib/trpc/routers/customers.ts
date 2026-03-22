@@ -1,7 +1,8 @@
 import { z } from "zod/v4";
 import { protectedProcedure, router } from "../init";
 import { db } from "@/lib/db";
-import { customers } from "@/lib/db/schema";
+import { TRPCError } from "@trpc/server";
+import { customers, orders } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 
 const customerSchema = z.object({
@@ -14,6 +15,31 @@ const customerSchema = z.object({
   created_at: z.date().nullable(),
 });
 
+const customerDetailsSchema = customerSchema.extend({
+  totalOrders: z.number(),
+  totalSpent: z.number(),
+  orders: z.array(
+    z.object({
+      id: z.number(),
+      total_amount: z.number(),
+      status: z.string().nullable(),
+      created_at: z.date().nullable(),
+      orderItems: z.array(
+        z.object({
+          id: z.number(),
+          quantity: z.number(),
+          price: z.number(),
+          discount: z.number(),
+          product: z.object({
+            name: z.string(),
+            category: z.string().nullable(),
+          }).nullable(),
+        })
+      ).optional(),
+    })
+  ),
+});
+
 export const customersRouter = router({
   list: protectedProcedure
     .meta({ openapi: { method: "GET", path: "/customers", tags: ["Customers"], summary: "List all customers" } })
@@ -21,6 +47,45 @@ export const customersRouter = router({
     .output(z.array(customerSchema))
     .query(async ({ ctx }) => {
       return db.select().from(customers).where(eq(customers.user_uid, ctx.user.id));
+    }),
+
+  getDetails: protectedProcedure
+    .meta({ openapi: { method: "GET", path: "/customers/{id}/details", tags: ["Customers"], summary: "Get customer details and history" } })
+    .input(z.object({ id: z.number() }))
+    .output(customerDetailsSchema)
+    .query(async ({ ctx, input }) => {
+      const customer = await db.query.customers.findFirst({
+        where: and(eq(customers.id, input.id), eq(customers.user_uid, ctx.user.id)),
+      });
+
+      if (!customer) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" });
+      }
+
+      const customerOrders = await db.query.orders.findMany({
+        where: and(eq(orders.customer_id, input.id), eq(orders.user_uid, ctx.user.id)),
+        orderBy: (orders, { desc }) => [desc(orders.created_at)],
+        with: {
+          orderItems: {
+            with: {
+              product: {
+                columns: { name: true, category: true },
+              },
+            },
+          },
+        },
+      });
+
+      const completedOrders = customerOrders.filter((o) => o.status === "completed");
+      const totalSpent = completedOrders.reduce((sum, o) => sum + o.total_amount, 0);
+      const totalOrders = completedOrders.length;
+
+      return {
+        ...customer,
+        totalOrders,
+        totalSpent,
+        orders: customerOrders,
+      };
     }),
 
   create: protectedProcedure

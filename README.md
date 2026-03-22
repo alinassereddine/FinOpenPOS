@@ -382,16 +382,11 @@ erDiagram
         serial id PK
         varchar name
         text description
+        integer cost_price
         integer price
         integer in_stock
         varchar user_uid
         varchar category
-        varchar ncm
-        varchar cfop
-        varchar icms_cst
-        varchar pis_cst
-        varchar cofins_cst
-        varchar unit_of_measure
         text image_url
         timestamp created_at
     }
@@ -427,6 +422,8 @@ erDiagram
         integer product_id FK
         integer quantity
         integer price
+        integer cost_price
+        integer discount
         timestamp created_at
     }
 

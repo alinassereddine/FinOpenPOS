@@ -52,12 +52,13 @@ export default function Page() {
   const trpc = useTRPC();
   const { data, isLoading } = useQuery(trpc.dashboard.stats.queryOptions());
   const t = useTranslations("dashboard");
+  const tc = useTranslations("common");
   const locale = useLocale();
 
   if (isLoading || !data) {
     return (
       <div className="grid flex-1 items-start gap-6">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -93,7 +94,7 @@ export default function Page() {
   return (
     <div className="grid flex-1 items-start gap-6 min-w-0 overflow-hidden">
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -107,6 +108,22 @@ export default function Page() {
             </div>
             <p className="text-xs text-muted-foreground">
               {t("completedIncome")}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {tc("grossProfit")}
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-emerald-600">
+              {formatCurrency(data.totalProductProfit, locale)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Profit from product margins
             </p>
           </CardContent>
         </Card>

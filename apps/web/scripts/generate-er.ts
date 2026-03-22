@@ -122,7 +122,3 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "../../..");
 injectIntoFile(resolve(root, "README.md"), mermaid);
 injectIntoFile(resolve(root, "README.ptBR.md"), mermaid);
-injectIntoFile(
-  resolve(root, "apps/docs/content/docs/database.mdx"),
-  mermaid,
-);

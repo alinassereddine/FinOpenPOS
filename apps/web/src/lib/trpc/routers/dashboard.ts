@@ -1,7 +1,7 @@
 import { z } from "zod/v4";
 import { protectedProcedure, router } from "../init";
 import { db } from "@/lib/db";
-import { transactions } from "@/lib/db/schema";
+import { transactions, orders } from "@/lib/db/schema";
 import { eq, and, asc } from "drizzle-orm";
 
 export const dashboardRouter = router({
@@ -13,6 +13,7 @@ export const dashboardRouter = router({
         totalRevenue: z.number(),
         totalExpenses: z.number(),
         totalProfit: z.number(),
+        totalProductProfit: z.number(),
         revenueByCategory: z.record(z.string(), z.number()),
         expensesByCategory: z.record(z.string(), z.number()),
         cashFlow: z.array(z.object({ date: z.string(), amount: z.number() })),
@@ -47,6 +48,20 @@ export const dashboardRouter = router({
 
       const totalProfit = totalSelling - totalExpenses;
 
+      const allOrders = await db.query.orders.findMany({
+        where: and(eq(orders.status, "completed"), eq(orders.user_uid, uid)),
+        with: {
+          orderItems: {
+            columns: { cost_price: true, quantity: true },
+          },
+        },
+      });
+
+      const totalProductProfit = allOrders.reduce((s, o) => {
+        const cost = o.orderItems?.reduce((cs, i) => cs + (i.cost_price || 0) * i.quantity, 0) || 0;
+        return s + (o.total_amount - cost);
+      }, 0);
+
       const revenueByCategory = allCompleted
         .filter((t) => t.type === "income")
         .reduce<Record<string, number>>((acc, t) => {
@@ -77,6 +92,7 @@ export const dashboardRouter = router({
         totalRevenue,
         totalExpenses,
         totalProfit,
+        totalProductProfit,
         revenueByCategory,
         expensesByCategory,
         cashFlow: Object.entries(cashFlow).map(([date, amount]) => ({ date, amount })),

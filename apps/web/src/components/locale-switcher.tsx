@@ -14,7 +14,7 @@ import {
 
 const localeNames: Record<Locale, string> = {
   en: "English",
-  "pt-BR": "Português",
+  ar: "العربية",
 };
 
 export function LocaleSwitcher() {

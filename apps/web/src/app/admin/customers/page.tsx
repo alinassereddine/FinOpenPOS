@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useMemo } from "react";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
@@ -42,7 +43,17 @@ export default function CustomersPage() {
   ];
 
   const tableColumns: Column<Customer>[] = [
-    { key: "name", header: tc("name"), sortable: true, className: "font-medium" },
+    {
+      key: "name",
+      header: tc("name"),
+      sortable: true,
+      className: "font-medium",
+      render: (row) => (
+        <Link href={`/admin/customers/${row.id}`} className="hover:underline text-primary">
+          {row.name}
+        </Link>
+      ),
+    },
     { key: "email", header: tc("email"), sortable: true },
     { key: "phone", header: tc("phone"), hideOnMobile: true },
     {

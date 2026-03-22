@@ -6,20 +6,16 @@ import { ordersRouter } from "./routers/orders";
 import { transactionsRouter } from "./routers/transactions";
 import { paymentMethodsRouter } from "./routers/payment-methods";
 import { dashboardRouter } from "./routers/dashboard";
-import { fiscalSettingsRouter } from "./routers/fiscal-settings";
-import { fiscalRouter } from "./routers/fiscal";
-import { citiesRouter } from "./routers/cities";
+import { settingsRouter } from "./routers/settings";
 
 export const appRouter = router({
+  settings: settingsRouter,
   products: productsRouter,
   customers: customersRouter,
   orders: ordersRouter,
   transactions: transactionsRouter,
   paymentMethods: paymentMethodsRouter,
   dashboard: dashboardRouter,
-  fiscalSettings: fiscalSettingsRouter,
-  fiscal: fiscalRouter,
-  cities: citiesRouter,
 });
 
 export type AppRouter = typeof appRouter;

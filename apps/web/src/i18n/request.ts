@@ -4,7 +4,7 @@ import { defaultLocale, type Locale, locales } from "./config";
 
 const messageImports = {
   en: () => import("../messages/en"),
-  "pt-BR": () => import("../messages/pt-BR"),
+  ar: () => import("../messages/ar"),
 } as const;
 
 export default getRequestConfig(async () => {

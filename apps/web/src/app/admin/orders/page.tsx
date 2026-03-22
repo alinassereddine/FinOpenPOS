@@ -23,7 +23,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { formatCurrency } from "@/lib/utils";
 
 type Order = RouterOutputs["orders"]["list"][number];
-type OrderStatus = "completed" | "pending" | "cancelled";
+type OrderStatus = "completed" | "cancelled";
 
 export default function OrdersPage() {
   const trpc = useTRPC();
@@ -34,13 +34,12 @@ export default function OrdersPage() {
 
   const orderEditSchema = z.object({
     total: z.string().min(1, t("totalRequired")),
-    status: z.enum(["completed", "pending", "cancelled"]),
+    status: z.enum(["completed", "cancelled"]),
   });
 
   const statusFilterOptions: FilterOption[] = [
     { label: tc("all"), value: "all" },
     { label: tc("completed"), value: "completed", variant: "success" },
-    { label: tc("pending"), value: "pending", variant: "warning" },
     { label: tc("cancelled"), value: "cancelled", variant: "danger" },
   ];
 
@@ -65,9 +64,9 @@ export default function OrdersPage() {
       header: tc("status"),
       sortable: true,
       render: (row) => {
-        const s = row.status ?? "pending";
-        const color = s === "completed" ? "text-green-600" : s === "cancelled" ? "text-red-600" : "text-yellow-600";
-        const label = s === "completed" ? tc("completed") : s === "cancelled" ? tc("cancelled") : tc("pending");
+        const s = row.status ?? "completed";
+        const color = s === "completed" ? "text-green-600" : "text-red-600";
+        const label = s === "completed" ? tc("completed") : tc("cancelled");
         return <span className={color}>{label}</span>;
       },
     },
@@ -85,7 +84,7 @@ export default function OrdersPage() {
     { key: "id", header: t("orderId"), getValue: (o) => o.id },
     { key: "customer", header: t("customer"), getValue: (o) => o.customer?.name ?? "" },
     { key: "total", header: tc("total"), getValue: (o) => (o.total_amount / 100).toFixed(2) },
-    { key: "status", header: tc("status"), getValue: (o) => o.status ?? "pending" },
+    { key: "status", header: tc("status"), getValue: (o) => o.status ?? "completed" },
     { key: "date", header: tc("date"), getValue: (o) => o.created_at ? new Date(o.created_at).toLocaleDateString() : "" },
   ];
 
@@ -115,7 +114,7 @@ export default function OrdersPage() {
   });
 
   const form = useForm({
-    defaultValues: { total: "", status: "pending" as OrderStatus },
+    defaultValues: { total: "", status: "completed" as OrderStatus },
     validators: {
       onSubmit: orderEditSchema,
     },
@@ -143,7 +142,7 @@ export default function OrdersPage() {
     setEditCustomerName(o.customer?.name ?? "");
     form.reset();
     form.setFieldValue("total", (o.total_amount / 100).toString());
-    form.setFieldValue("status", (o.status ?? "pending") as OrderStatus);
+    form.setFieldValue("status", (o.status ?? "completed") as OrderStatus);
     setIsDialogOpen(true);
   };
 
@@ -235,7 +234,6 @@ export default function OrdersPage() {
                       <SelectTrigger id="status" className="col-span-3"><SelectValue placeholder={t("selectStatus")} /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="completed">{tc("completed")}</SelectItem>
-                        <SelectItem value="pending">{tc("pending")}</SelectItem>
                         <SelectItem value="cancelled">{tc("cancelled")}</SelectItem>
                       </SelectContent>
                     </Select>
