@@ -3,7 +3,7 @@ import { protectedProcedure, router } from "../init";
 import { db } from "@/lib/db";
 import { TRPCError } from "@trpc/server";
 import { customers, orders } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 
 const customerSchema = z.object({
   id: z.number(),
@@ -46,7 +46,11 @@ export const customersRouter = router({
     .input(z.void())
     .output(z.array(customerSchema))
     .query(async ({ ctx }) => {
-      return db.select().from(customers).where(eq(customers.user_uid, ctx.user.id));
+      return db
+        .select()
+        .from(customers)
+        .where(eq(customers.user_uid, ctx.user.id))
+        .orderBy(asc(customers.name));
     }),
 
   getDetails: protectedProcedure
