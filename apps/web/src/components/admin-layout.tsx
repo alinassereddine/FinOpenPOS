@@ -33,6 +33,7 @@ import {
   ReceiptTextIcon,
   SettingsIcon,
   BarChart3Icon,
+  TagsIcon,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -42,7 +43,7 @@ import { logout } from "@/app/login/actions";
 
 interface NavItem {
   href: string;
-  labelKey: "dashboard" | "cashier" | "products" | "customers" | "orders" | "pos" | "sales" | "storeSettings";
+  labelKey: "dashboard" | "cashier" | "products" | "categories" | "customers" | "orders" | "pos" | "sales" | "storeSettings";
   icon: LucideIcon;
 }
 
@@ -50,6 +51,7 @@ const navItems: NavItem[] = [
   { href: "/admin", labelKey: "dashboard", icon: LayoutDashboardIcon },
   { href: "/admin/cashier", labelKey: "cashier", icon: DollarSignIcon },
   { href: "/admin/products", labelKey: "products", icon: PackageIcon },
+  { href: "/admin/categories", labelKey: "categories", icon: TagsIcon },
   { href: "/admin/customers", labelKey: "customers", icon: UsersIcon },
   { href: "/admin/orders", labelKey: "orders", icon: ShoppingBagIcon },
   { href: "/admin/pos", labelKey: "pos", icon: ShoppingCartIcon },

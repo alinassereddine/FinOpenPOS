@@ -28,7 +28,7 @@ import { formatCurrency, type CurrencyCode } from "@/lib/utils";
 
 type Product = RouterOutputs["products"]["list"][number];
 type POSProduct = Pick<Product, "id" | "name" | "price" | "in_stock" | "image_url"> & {
-  category: string;
+  categoryName: string;
   quantity: number;
   discount: number;
 };
@@ -37,6 +37,7 @@ export default function POSPage() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const { data: products = [], isLoading: loadingProducts } = useQuery(trpc.products.list.queryOptions());
+  const { data: categoriesData = [], isLoading: loadingCategories } = useQuery(trpc.categories.list.queryOptions());
   const { data: customers = [], isLoading: loadingCustomers } = useQuery(trpc.customers.list.queryOptions());
   const { data: paymentMethods = [], isLoading: loadingMethods } = useQuery(trpc.paymentMethods.list.queryOptions());
   const { data: storeSettings, isLoading: loadingSettings } = useQuery(
@@ -47,7 +48,7 @@ export default function POSPage() {
   const tOrders = useTranslations("orders");
   const locale = useLocale();
 
-  const loading = loadingProducts || loadingCustomers || loadingMethods || loadingSettings;
+  const loading = loadingProducts || loadingCategories || loadingCustomers || loadingMethods || loadingSettings;
 
   const createOrderMutation = useMutation(
     trpc.orders.create.mutationOptions({
@@ -128,21 +129,17 @@ export default function POSPage() {
     }
   }, [paymentMethods, loadingMethods, paymentMethod]);
 
-  // Extract unique categories from products
-  const categories = useMemo(() => {
-    const cats = new Set<string>();
-    for (const p of products) {
-      if (p.category) cats.add(p.category);
-    }
-    return Array.from(cats).sort();
-  }, [products]);
+  // Use the new categories table for POS filtering
+  const categoriesList = useMemo(() => {
+    return categoriesData.map(c => ({ id: c.id, name: c.name }));
+  }, [categoriesData]);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      if (categoryFilter !== "all" && (p.category ?? "") !== categoryFilter) return false;
+      if (categoryFilter !== "all" && String(p.category_id) !== categoryFilter) return false;
       if (!productSearch.trim()) return true;
       const q = productSearch.toLowerCase();
-      return p.name.toLowerCase().includes(q) || (p.category ?? "").toLowerCase().includes(q);
+      return p.name.toLowerCase().includes(q) || (p.category?.name ?? "").toLowerCase().includes(q);
     });
   }, [products, productSearch, categoryFilter]);
 
@@ -173,7 +170,7 @@ export default function POSPage() {
           price: product.price,
           in_stock: product.in_stock,
           image_url: product.image_url,
-          category: product.category ?? "",
+          categoryName: product.category?.name ?? "",
           quantity: 1,
           discount: 0,
         },
@@ -391,18 +388,18 @@ export default function POSPage() {
             >
               {t("allCategories")}
             </button>
-            {categories.map((cat) => (
+            {categoriesList.map((cat) => (
               <button
-                key={cat}
+                key={cat.id}
                 type="button"
-                onClick={() => setCategoryFilter(cat)}
+                onClick={() => setCategoryFilter(String(cat.id))}
                 className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium capitalize transition-colors touch-manipulation ${
-                  categoryFilter === cat
+                  categoryFilter === String(cat.id)
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "bg-muted text-muted-foreground hover:bg-accent"
                 }`}
               >
-                {cat}
+                {cat.name}
               </button>
             ))}
           </div>

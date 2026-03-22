@@ -5,7 +5,6 @@ import {
   text,
   integer,
   timestamp,
-  boolean,
   customType,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
@@ -37,8 +36,16 @@ export const products = pgTable("products", {
   price: integer("price").notNull(),
   in_stock: integer("in_stock").notNull(),
   user_uid: varchar("user_uid", { length: 255 }).notNull(),
-  category: varchar("category", { length: 50 }),
+  category_id: integer("category_id").references(() => productCategories.id),
   image_url: text("image_url"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+// ── Categories ──────────────────────────────────────────────────────────────
+export const productCategories = pgTable("product_categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  user_uid: varchar("user_uid", { length: 255 }).notNull(),
   created_at: timestamp("created_at").defaultNow(),
 });
 
@@ -148,8 +155,16 @@ export const customersRelations = relations(customers, ({ many }) => ({
   orders: many(orders),
 }));
 
-export const productsRelations = relations(products, ({ many }) => ({
+export const productsRelations = relations(products, ({ one, many }) => ({
   orderItems: many(orderItems),
+  category: one(productCategories, {
+    fields: [products.category_id],
+    references: [productCategories.id],
+  }),
+}));
+
+export const productCategoriesRelations = relations(productCategories, ({ many }) => ({
+  products: many(products),
 }));
 
 export const paymentMethodsRelations = relations(paymentMethods, ({ many }) => ({

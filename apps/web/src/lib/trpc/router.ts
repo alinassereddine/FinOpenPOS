@@ -1,6 +1,7 @@
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import { router } from "./init";
 import { productsRouter } from "./routers/products";
+import { categoriesRouter } from "./routers/categories";
 import { customersRouter } from "./routers/customers";
 import { ordersRouter } from "./routers/orders";
 import { transactionsRouter } from "./routers/transactions";
@@ -11,6 +12,7 @@ import { settingsRouter } from "./routers/settings";
 export const appRouter = router({
   settings: settingsRouter,
   products: productsRouter,
+  categories: categoriesRouter,
   customers: customersRouter,
   orders: ordersRouter,
   transactions: transactionsRouter,

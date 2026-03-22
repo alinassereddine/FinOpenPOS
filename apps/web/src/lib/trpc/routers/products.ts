@@ -11,10 +11,14 @@ const productSchema = z.object({
   price: z.number(),
   cost_price: z.number(),
   in_stock: z.number(),
-  category: z.string().nullable(),
+  category_id: z.number().nullable(),
   user_uid: z.string(),
   image_url: z.string().nullable(),
   created_at: z.date().nullable(),
+  category: z.object({
+    id: z.number(),
+    name: z.string(),
+  }).nullable().optional(),
 });
 
 export const productsRouter = router({
@@ -23,7 +27,12 @@ export const productsRouter = router({
     .input(z.void())
     .output(z.array(productSchema))
     .query(async ({ ctx }) => {
-      return db.select().from(products).where(eq(products.user_uid, ctx.user.id));
+      return db.query.products.findMany({
+        where: eq(products.user_uid, ctx.user.id),
+        with: {
+          category: true,
+        },
+      });
     }),
 
   create: protectedProcedure
@@ -35,7 +44,7 @@ export const productsRouter = router({
         price: z.number().int(),
         cost_price: z.number().int().default(0),
         in_stock: z.number().int().min(0),
-        category: z.string().optional(),
+        category_id: z.number().optional().nullable(),
         image_url: z.string().optional(),
       })
     )
@@ -45,7 +54,14 @@ export const productsRouter = router({
         .insert(products)
         .values({ ...input, user_uid: ctx.user.id })
         .returning();
-      return data;
+      
+      const productWithCategory = await db.query.products.findFirst({
+        where: eq(products.id, data.id),
+        with: { category: true }
+      });
+
+      if (!productWithCategory) throw new Error("Failed to fetch created product");
+      return productWithCategory as any;
     }),
 
   update: protectedProcedure
@@ -58,7 +74,7 @@ export const productsRouter = router({
         price: z.number().int().optional(),
         cost_price: z.number().int().optional(),
         in_stock: z.number().int().min(0).optional(),
-        category: z.string().optional(),
+        category_id: z.number().optional().nullable(),
         image_url: z.string().optional(),
       })
     )
@@ -70,7 +86,14 @@ export const productsRouter = router({
         .set({ ...data, user_uid: ctx.user.id })
         .where(and(eq(products.id, id), eq(products.user_uid, ctx.user.id)))
         .returning();
-      return updated;
+
+      const productWithCategory = await db.query.products.findFirst({
+        where: eq(products.id, updated.id),
+        with: { category: true }
+      });
+
+      if (!productWithCategory) throw new Error("Failed to fetch updated product");
+      return productWithCategory as any;
     }),
 
   delete: protectedProcedure

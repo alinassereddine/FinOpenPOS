@@ -39,7 +39,9 @@ type Product = RouterOutputs["products"]["list"][number];
 export default function Products() {
   const trpc = useTRPC();
   const { data: products = [], isLoading } = useQuery(trpc.products.list.queryOptions());
+  const { data: catList = [] } = useQuery(trpc.categories.list.queryOptions());
   const t = useTranslations("products");
+  const tCat = useTranslations("categories");
   const tc = useTranslations("common");
   const locale = useLocale();
 
@@ -49,16 +51,14 @@ export default function Products() {
     price: z.number().min(0, t("priceMustBePositive")),
     cost_price: z.number().min(0, t("priceMustBePositive")),
     in_stock: z.number().int().min(0, t("stockMustBeNonNegative")),
-    category: z.string(),
+    category_id: z.number().nullable(),
     image_url: z.string(),
   });
 
-  const categoryFilterOptions: FilterOption[] = [
+  const categoryFilterOptions: FilterOption[] = useMemo(() => [
     { label: tc("all"), value: "all" },
-    { label: t("electronics"), value: "electronics" },
-    { label: t("home"), value: "home" },
-    { label: t("health"), value: "health" },
-  ];
+    ...catList.map(c => ({ label: c.name, value: String(c.id) }))
+  ], [catList, tc]);
 
   const stockFilterOptions: FilterOption[] = [
     { label: t("allStock"), value: "all" },
@@ -84,6 +84,11 @@ export default function Products() {
       render: (row) => formatCurrency(row.cost_price, locale),
     },
     { key: "in_stock", header: t("stock"), sortable: true },
+    {
+      key: "category",
+      header: tc("category"),
+      render: (row) => row.category?.name ?? "-",
+    },
   ];
 
   const exportColumns: ExportColumn<Product>[] = [
@@ -92,7 +97,7 @@ export default function Products() {
     { key: "cost_price", header: tc("costPrice"), getValue: (p) => (p.cost_price / 100).toFixed(2) },
     { key: "price", header: tc("price"), getValue: (p) => (p.price / 100).toFixed(2) },
     { key: "in_stock", header: t("stock"), getValue: (p) => p.in_stock },
-    { key: "category", header: tc("category"), getValue: (p) => p.category ?? "" },
+    { key: "category", header: tc("category"), getValue: (p) => p.category?.name ?? "" },
   ];
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -130,7 +135,7 @@ export default function Products() {
   });
 
   const form = useForm({
-    defaultValues: { name: "", description: "", price: 0, cost_price: 0, in_stock: 0, category: "", image_url: "" },
+    defaultValues: { name: "", description: "", price: 0, cost_price: 0, in_stock: 0, category_id: null as number | null, image_url: "" },
     validators: {
       onSubmit: productFormSchema,
     },
@@ -141,7 +146,7 @@ export default function Products() {
         price: Math.round(value.price * 100),
         cost_price: Math.round(value.cost_price * 100),
         in_stock: value.in_stock,
-        category: value.category || undefined,
+        category_id: value.category_id,
         image_url: value.image_url || undefined,
       };
       if (isEditing) {
@@ -154,7 +159,7 @@ export default function Products() {
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      if (categoryFilter !== "all" && p.category !== categoryFilter) return false;
+      if (categoryFilter !== "all" && String(p.category_id) !== categoryFilter) return false;
       if (stockFilter === "in-stock" && p.in_stock === 0) return false;
       if (stockFilter === "out-of-stock" && p.in_stock > 0) return false;
       return p.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -175,7 +180,7 @@ export default function Products() {
     form.setFieldValue("cost_price", p.cost_price / 100);
     form.setFieldValue("price", p.price / 100);
     form.setFieldValue("in_stock", p.in_stock);
-    form.setFieldValue("category", p.category ?? "");
+    form.setFieldValue("category_id", p.category_id);
     form.setFieldValue("image_url", p.image_url ?? "");
     setIsDialogOpen(true);
   };
@@ -318,7 +323,7 @@ export default function Products() {
               <form.Field name="in_stock">
                 {(field) => (
                   <div className="flex flex-col sm:grid sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
-                    <Label htmlFor="in_stock" className="sm:text-right">{t("inStock")}</Label>
+                    <Label htmlFor="in_stock" className="sm:text-right">{t("stock")}</Label>
                     <div className="col-span-3">
                       <Input
                         id="in_stock"
@@ -332,17 +337,17 @@ export default function Products() {
                   </div>
                 )}
               </form.Field>
-              <form.Field name="category">
+              <form.Field name="category_id">
                 {(field) => (
                   <div className="flex flex-col sm:grid sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
                     <Label htmlFor="category" className="sm:text-right">{tc("category")}</Label>
-                    <Select value={field.state.value} onValueChange={(value) => field.handleChange(value)}>
+                    <Select value={field.state.value ? String(field.state.value) : "none"} onValueChange={(value) => field.handleChange(value === "none" ? null : Number(value))}>
                       <SelectTrigger className="col-span-3"><SelectValue placeholder={t("selectCategory")} /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="electronics">{t("electronics")}</SelectItem>
-                        <SelectItem value="clothing">{t("clothing")}</SelectItem>
-                        <SelectItem value="books">{t("books")}</SelectItem>
-                        <SelectItem value="home">{t("home")}</SelectItem>
+                        <SelectItem value="none">{tc("all")}</SelectItem>
+                        {catList.map(c => (
+                          <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -353,7 +358,7 @@ export default function Products() {
                   <div className="flex flex-col sm:grid sm:grid-cols-4 sm:items-start gap-2 sm:gap-4">
                     <Label htmlFor="image_url" className="sm:text-right mt-2">{t("imageUrl")}</Label>
                     <div className="col-span-3 space-y-2">
-                      <Input
+                       <Input
                         id="image_url"
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}

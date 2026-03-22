@@ -30,7 +30,10 @@ const orderDetailSchema = z.object({
     price: z.number(),
     cost_price: z.number().nullable(),
     discount: z.number(),
-    product: z.object({ name: z.string(), category: z.string().nullable() }).nullable(),
+    product: z.object({
+      name: z.string(),
+      category: z.object({ name: z.string() }).nullable().optional(),
+    }).nullable(),
   })),
 });
 
@@ -46,7 +49,10 @@ export const ordersRouter = router({
           customer: { columns: { name: true } },
           orderItems: {
             with: {
-              product: { columns: { name: true, category: true } },
+              product: {
+                columns: { name: true },
+                with: { category: { columns: { name: true } } },
+              },
             },
           },
         },
