@@ -121,4 +121,3 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "../../..");
 injectIntoFile(resolve(root, "README.md"), mermaid);
-injectIntoFile(resolve(root, "README.ptBR.md"), mermaid);
