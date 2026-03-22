@@ -75,7 +75,6 @@ export default function POSPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<{ id: number; name: string } | null>(null);
   const [productSearch, setProductSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [emitNfce, setEmitNfce] = useState(false);
   const [editingDiscountId, setEditingDiscountId] = useState<number | null>(null);
   const [discountInput, setDiscountInput] = useState("");
   const [lastSale, setLastSale] = useState<{
@@ -663,18 +662,6 @@ export default function POSPage() {
 
         {/* Cart Footer */}
         <div className="shrink-0 border-t p-3 space-y-3">
-          {/* NFC-e toggle */}
-          <label className="flex items-center gap-2 text-sm cursor-pointer select-none touch-manipulation">
-            <input
-              type="checkbox"
-              checked={emitNfce}
-              onChange={(e) => setEmitNfce(e.target.checked)}
-              className="h-5 w-5 rounded border-gray-300"
-            />
-            <ReceiptTextIcon className="h-4 w-4 text-muted-foreground" />
-            NFC-e
-          </label>
-
           {/* Total */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">{tc("total")}</span>
